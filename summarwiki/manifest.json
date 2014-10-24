@@ -11,7 +11,8 @@
   "content_scripts": [
     {
       "matches": ["*://*.wikipedia.org/*"],
-      "js": ["jquery-2.0.3.min.js", "summarwiki.js"],
+      "js": ["jquery-2.0.3.min.js", "jquery.qtip.min.js", "summarwiki.js"],
+      "css": ["jquery.qtip.min.css"],
       "run_at": "document_end"
     }
   ]

@@ -6,10 +6,11 @@ function getWikiSummary(term){
   var summary = '';
   // Got this voodoo from http://jsfiddle.net/gautamadude/HMJJg/1/
   $.getJSON(query, function(data) {
-    for (text in data.parse.text) {
-      var text = data.parse.text[text].split("<p>");
-      var pText = "";
-      for (p in text) {
+    try {
+      for (text in data.parse.text) {
+        var text = data.parse.text[text].split("<p>");
+        var pText = "";
+        for (p in text) {
             //Remove html comment
             text[p] = text[p].split("<!--");
             if (text[p].length > 1) {
@@ -30,11 +31,16 @@ function getWikiSummary(term){
                     }
                 }
             }
+        }
       }
-      pText = pText.substring(0, pText.length - 2); //Remove extra newline
-      pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
-      console.log(pText);
+    } catch (err) {
+      console.log("PROBLEM");
+      return null;
     }
+    pText = pText.substring(0, pText.length - 2); //Remove extra newline
+    pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
+    console.log(pText);
+    return pText;
   });
 }
 
@@ -56,34 +62,12 @@ $("a").each(function() {
     //Add qtip
     $(this).qtip({
       content: {
-        text: function(event, api) {
-          $.ajax({
-            url: api.elements.target.attr('href')
-          })
-          .then(function(content) {
-            //Tooltip content on success gets set here
-            api.set('content.text', getWikiSummary(l.link.split('/')[l.link.split('/').length - 1]));
-          }, function(xhr, status, error) {
-            $(this).href = l.link;
-          }); 
-          return 'Fetching info on ' + l.text + '...'; 
-        }
+        text: getWikiSummary(l.link.split('/')[l.link.split('/').length - 1])
       },
       position: {
         viewport: $(window)
       },
       style: 'qtip-wiki'
-    });
-    // Add hover actions
-    $(this).hover(function(){
-      console.log("fetching info for " + l.text + " from " + l.link);
-      try {
-        getWikiSummary(l.link.split('/')[l.link.split('/').length - 1]);
-      } catch(err) {
-        console.log(l.text + " isn't a real wiki article"); 
-      }
-    }, function(){
-      console.log("don't trust " + l.text);      
     });
   }
 });
