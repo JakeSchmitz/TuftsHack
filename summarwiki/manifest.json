@@ -4,6 +4,9 @@
   "manifest_version": 2,
   "description": "Provides easy access to summaries of wiki articles",
   "permissions": ["tabs", "*://*.wikipedia.org/*"],
+  "web_accessible_resources": [
+    "*"
+  ],
   "background":
     {
         "scripts": ["jquery-2.0.3.min.js"]
@@ -11,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.wikipedia.org/*"],
-      "js": ["jquery-2.0.3.min.js", "jquery.qtip.min.js", "summarwiki.js"],
+      "js": ["jquery-2.0.3.min.js", "jquery.qtip.min.js", "summarwiki.js", "wiki_summary.js"],
       "css": ["jquery.qtip.min.css"],
       "run_at": "document_end"
     }
