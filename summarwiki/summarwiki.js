@@ -53,6 +53,28 @@ $("a").each(function() {
   l.text = this.innerHTML;
   if (checkIsWikiPage(l.text, l.link)) {
     links.push(l);
+    //Add qtip
+    $(this).qtip({
+      content: {
+        text: function(event, api) {
+          $.ajax({
+            url: api.elements.target.attr('href')
+          })
+          .then(function(content) {
+            //Tooltip content on success gets set here
+            api.set('content.text', getWikiSummary(l.link.split('/')[l.link.split('/').length - 1]));
+          }, function(xhr, status, error) {
+            $(this).href = l.link;
+          }); 
+          return 'Fetching info on ' + l.text + '...'; 
+        }
+      },
+      position: {
+        viewport: $(window)
+      },
+      style: 'qtip-wiki'
+    });
+    // Add hover actions
     $(this).hover(function(){
       console.log("fetching info for " + l.text + " from " + l.link);
       try {
@@ -60,6 +82,8 @@ $("a").each(function() {
       } catch(err) {
         console.log(l.text + " isn't a real wiki article"); 
       }
+    }, function(){
+      console.log("don't trust " + l.text);      
     });
   }
 });
