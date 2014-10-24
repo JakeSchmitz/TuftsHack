@@ -1,0 +1,18 @@
+{
+  "name": "SummarWiki",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Provides easy access to summaries of wiki articles",
+  "permissions": ["tabs", "*://*.wikipedia.org/*"],
+  "background":
+    {
+        "scripts": ["jquery-2.0.3.min.js"]
+    },
+  "content_scripts": [
+    {
+      "matches": ["*://*.wikipedia.org/*"],
+      "js": ["jquery-2.0.3.min.js", "summarwiki.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
