@@ -1,6 +1,6 @@
 var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
 var wiki_callback = "&prop=text&section=0&format=json&callback=?";
-/*
+
 function getWikiSummary(term){
   var query = wiki_prefix + term + wiki_callback; 
   var summary = '';
@@ -42,12 +42,12 @@ function getWikiSummary(term){
     return pText;
   });
 }
-*/
+
 function checkIsWikiPage(term, link){
   if (link.indexOf("&") < 0) {
-    return true;
+    return false;
   }
-  return false;
+  return true;
 }
 
 var links = [];
@@ -57,20 +57,21 @@ $("a").each(function() {
   l.link = this.href;
   l.text = this.innerHTML;
   if (checkIsWikiPage(l.text, l.link)) {
-    links.push(l);
     search_term = l.link.split('/')[l.link.split('/').length - 1];
     //Add qtip
     $(this).qtip({
       content: {
         text: function(event, api) {
                     $.ajax({
-                      url: chrome.extension.getURL('wiki_summary.js'),
+                      url: chrome.extension.getURL('summarwiki.js'),
                       data: { func: 'getWikiSummary', term: search_term}
                     })
                     .then(function(content) {
+                        console.log('THIS: ' + search_term);
                         // Set the tooltip content upon successful retrieval
-                        api.set('content.text', content);
+                        api.set('content.text', getWikiSummary(search_term));
                     }, function(xhr, status, error) {
+                        console.log('failed to load wiki summary');
                         // Upon failure... set the tooltip content to error
                         api.set('content.text', status + ': ' + error);
                     });
