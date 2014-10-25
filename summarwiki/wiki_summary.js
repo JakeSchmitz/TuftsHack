@@ -30,7 +30,8 @@ function getWikiSummary(term){
                         pText += "\n";
                     }   
                 }   
-            }           }   
+            }           
+        }   
       }   
     } catch (err) {
       console.log("PROBLEM : " + pText);

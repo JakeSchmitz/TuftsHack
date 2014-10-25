@@ -69,8 +69,9 @@ $("a").each(function() {
                     .then(function(content) {
                         var c = content.split('term');
                         var code = c[0] + search_term + c[1]; 
-                        var summary = getWikiSummary(search_term)
+                        var summary = getWikiSummary(search_term);
                         console.log(summary);
+                        console.log(content);
                         // Set the tooltip content upon successful retrieval
                         api.set('content.text', content);
                     }, function(xhr, status, error) {
