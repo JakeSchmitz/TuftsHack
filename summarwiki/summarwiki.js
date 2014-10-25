@@ -57,19 +57,22 @@ $("a").each(function() {
   l.link = this.href;
   l.text = this.innerHTML;
   if (checkIsWikiPage(l.text, l.link)) {
-    search_term = l.link.split('/')[l.link.split('/').length - 1];
+    var search_term = l.link.split('/')[l.link.split('/').length - 1];
     //Add qtip
     $(this).qtip({
       content: {
         text: function(event, api) {
                     $.ajax({
-                      url: chrome.extension.getURL('summarwiki.js'),
+                      url: chrome.extension.getURL('wiki_summary.js'),
                       data: { func: 'getWikiSummary', term: search_term}
                     })
                     .then(function(content) {
-                        console.log('THIS: ' + search_term);
+                        var c = content.split('term');
+                        var code = c[0] + search_term + c[1]; 
+                        var summary = getWikiSummary(search_term)
+                        console.log(summary);
                         // Set the tooltip content upon successful retrieval
-                        api.set('content.text', getWikiSummary(search_term));
+                        api.set('content.text', content);
                     }, function(xhr, status, error) {
                         console.log('failed to load wiki summary');
                         // Upon failure... set the tooltip content to error
