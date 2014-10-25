@@ -17,4 +17,8 @@ article from the raw content of a page (accessible through the wikipedia
 API). Right now this code block only works on roughly 3/4 of links, so 
 improving this chunk of code is one of the priorities moving forward.
 
+Another place to go from here is to add the principle image for the article
+to the top of the summary. I've written the code to get the url that the
+image is at but I'm having a little trouble interpretting it as anything
+but plain html right now.
 
