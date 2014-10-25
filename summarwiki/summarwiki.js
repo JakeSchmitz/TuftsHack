@@ -45,9 +45,9 @@ function getWikiSummary(term){
 
 function checkIsWikiPage(term, link){
   if (link.indexOf("&") < 0) {
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
 var links = [];
