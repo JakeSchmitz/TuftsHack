@@ -1,8 +1,8 @@
 var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
-var wiki_callback = "&prop=text&section=0&format=json&callback=?";
+var wiki_callback = "&prop=text&redirects&section=0&format=json&callback=?";
 
 function setSummary(term, api){
-  console.log("Querying term " + term);
+  console.log('Looking up: ' + term);
   var query = wiki_prefix + term + wiki_callback; 
   var qText = "";
   // Got this voodoo from http://jsfiddle.net/gautamadude/HMJJg/1/
@@ -36,12 +36,18 @@ function setSummary(term, api){
         }
       }
     } catch (err) {
-      console.log("PROBLEM : " + pText);
+      console.err("PROBLEM SUMMARIZING:  " + pText);
       return pText;
     }
     pText = pText.substring(0, pText.length - 2); //Remove extra newline
     pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
-    console.log('returning: ' + pText);
+    //console.log('returning: ' + pText);
+    if (pText.length > 500){
+      pText = pText.substring(0, 500) + '...';
+    }
+    if (pText.length === 0) {
+      pText = 'No Data Available';
+    }
     api.set('content.text', pText);
     qText = pText;
     return pText;
