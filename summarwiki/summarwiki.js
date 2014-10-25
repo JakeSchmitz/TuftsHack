@@ -24,6 +24,7 @@ function setImage(term, summary, api){
 }
 
 function setSummary(term, api){
+  api.set('content.text', 'Searching....');
   //console.log('Looking up: ' + term);
   var query = wiki_prefix + term + wiki_callback; 
   var qText = "";
@@ -81,7 +82,7 @@ function setSummary(term, api){
 }
 
 function checkIsWikiPage(term, link){
-  if (link.indexOf('wikipedia') >= 0) {
+  if (link.indexOf('wikipedia') >= 0 && link.indexOf('#') < 0) {
     return true;
   }
   return false;
@@ -94,7 +95,7 @@ $("a").each(function() {
   l.link = this.href;
   l.text = this.innerHTML.replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});;
   if (checkIsWikiPage(l.text, l.link)) {
-    var search_term = l.link.split('/')[l.link.split('/').length - 1].replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});
+    var search_term = l.link.split('/')[l.link.split('/').length - 1].replace(/(\-[a-z])/g, function($1){return $1.toUpperCase();});
     //Add qtip
     $(this).qtip({
       content: {
@@ -105,7 +106,7 @@ $("a").each(function() {
       position: {
         viewport: $(window)
       },
-      style: {classes: 'qtip-dark summarwiki' }
+      style: {classes: 'qtip-dark qtip-jtools summarwiki' }
     });
   }
 });
