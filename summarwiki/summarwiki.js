@@ -11,8 +11,10 @@ function setSummary(term, api){
     var pText = "";
     try {
       for (text in data.parse.text) {
+        console.log(text);
         var text = data.parse.text[text].split("<p>");
         for (p in text) {
+            console.log(p);
             //Remove html comment
             text[p] = text[p].split("<!--");
             if (text[p].length > 1) {
@@ -32,6 +34,8 @@ function setSummary(term, api){
                         pText += "\n";
                     }
                 }
+            } else {
+              console.log('Weird length');
             }
         }
       }
@@ -42,12 +46,12 @@ function setSummary(term, api){
     pText = pText.substring(0, pText.length - 2); //Remove extra newline
     pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
     //console.log('returning: ' + pText);
-    if (pText.length > 500){
-      pText = pText.substring(0, 500) + '...';
+    if (pText.length > 600){
+      pText = pText.substring(0, 600) + '...';
     }
     if (pText.length === 0) {
       pText = 'No Data Available';
-    }
+    } 
     api.set('content.text', pText);
     qText = pText;
     return pText;
@@ -56,7 +60,7 @@ function setSummary(term, api){
 }
 
 function checkIsWikiPage(term, link){
-  if (link.indexOf("&") < 0) {
+  if (link.indexOf('wikipedia') >= 0) {
     return true;
   }
   return false;
