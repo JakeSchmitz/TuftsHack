@@ -1,15 +1,17 @@
 var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
 var wiki_callback = "&prop=text&section=0&format=json&callback=?";
 
-function getWikiSummary(term){
+function setSummary(term, api){
+  console.log("Querying term " + term);
   var query = wiki_prefix + term + wiki_callback; 
-  var summary = '';
+  var qText = "";
   // Got this voodoo from http://jsfiddle.net/gautamadude/HMJJg/1/
   $.getJSON(query, function(data) {
+    // console.log('DATA: ' + data);
+    var pText = "";
     try {
       for (text in data.parse.text) {
         var text = data.parse.text[text].split("<p>");
-        var pText = "";
         for (p in text) {
             //Remove html comment
             text[p] = text[p].split("<!--");
@@ -35,12 +37,16 @@ function getWikiSummary(term){
       }
     } catch (err) {
       console.log("PROBLEM : " + pText);
+      return pText;
     }
     pText = pText.substring(0, pText.length - 2); //Remove extra newline
     pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
-    console.log(pText);
+    console.log('returning: ' + pText);
+    api.set('content.text', pText);
+    qText = pText;
     return pText;
   });
+  return qText;
 }
 
 function checkIsWikiPage(term, link){
@@ -55,36 +61,20 @@ var links = [];
 $("a").each(function() {
   var l = {};
   l.link = this.href;
-  l.text = this.innerHTML;
+  l.text = this.innerHTML.replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});;
   if (checkIsWikiPage(l.text, l.link)) {
-    var search_term = l.link.split('/')[l.link.split('/').length - 1];
+    var search_term = l.link.split('/')[l.link.split('/').length - 1].replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});
     //Add qtip
     $(this).qtip({
       content: {
         text: function(event, api) {
-                    $.ajax({
-                      url: chrome.extension.getURL('wiki_summary.js'),
-                      data: { func: 'getWikiSummary', term: search_term}
-                    })
-                    .then(function(content) {
-                        var c = content.split('term');
-                        var code = c[0] + search_term + c[1]; 
-                        var summary = getWikiSummary(search_term);
-                        console.log(summary);
-                        console.log(content);
-                        // Set the tooltip content upon successful retrieval
-                        api.set('content.text', content);
-                    }, function(xhr, status, error) {
-                        console.log('failed to load wiki summary');
-                        // Upon failure... set the tooltip content to error
-                        api.set('content.text', status + ': ' + error);
-                    });
-            }
+          setSummary(search_term, api);
+        }
       },
       position: {
         viewport: $(window)
       },
-      style: 'qtip-wiki'
+      style: 'qtip-dark'
     });
   }
 });
