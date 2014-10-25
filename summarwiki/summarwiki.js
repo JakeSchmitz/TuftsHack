@@ -1,8 +1,30 @@
 var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
 var wiki_callback = "&prop=text&redirects&section=0&format=json&callback=?";
+var image_prefix = "http://en.wikipedia.org/w/api.php?action=query&titles=";
+var file_prefix = "http://en.wikipedia.org/wiki/";
+
+function setImage(term, summary, api){
+  var query = image_prefix + term + "&prop=images&format=json&callback=?";
+  $.getJSON(query, function(data) {
+    for (text in data.query.pages){
+      try {
+        var image_url = data.query.pages[text];
+        console.log(image_url.images[0].title);
+        var iurl = file_prefix + encodeURIComponent(image_url.images[0].title) + '#file';
+        var image_tag = '<img src=' + iurl + '>';
+        console.log(iurl);
+        console.log(image_tag);
+        summary = image_tag + summary;
+        api.set('content.text', summary);
+      } catch (err) {
+
+      }
+    }
+  });
+}
 
 function setSummary(term, api){
-  console.log('Looking up: ' + term);
+  //console.log('Looking up: ' + term);
   var query = wiki_prefix + term + wiki_callback; 
   var qText = "";
   // Got this voodoo from http://jsfiddle.net/gautamadude/HMJJg/1/
@@ -11,10 +33,10 @@ function setSummary(term, api){
     var pText = "";
     try {
       for (text in data.parse.text) {
-        console.log(text);
+        //console.log(text);
         var text = data.parse.text[text].split("<p>");
         for (p in text) {
-            console.log(p);
+            //console.log(p);
             //Remove html comment
             text[p] = text[p].split("<!--");
             if (text[p].length > 1) {
@@ -34,9 +56,7 @@ function setSummary(term, api){
                         pText += "\n";
                     }
                 }
-            } else {
-              console.log('Weird length');
-            }
+            } 
         }
       }
     } catch (err) {
@@ -46,13 +66,14 @@ function setSummary(term, api){
     pText = pText.substring(0, pText.length - 2); //Remove extra newline
     pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
     //console.log('returning: ' + pText);
-    if (pText.length > 600){
-      pText = pText.substring(0, 600) + '...';
+    if (pText.length > 700){
+      pText = pText.substring(0, 700) + '...';
     }
     if (pText.length === 0) {
       pText = 'No Data Available';
     } 
     api.set('content.text', pText);
+    //setImage(term, pText, api);
     qText = pText;
     return pText;
   });
@@ -84,7 +105,7 @@ $("a").each(function() {
       position: {
         viewport: $(window)
       },
-      style: 'qtip-dark'
+      style: {classes: 'qtip-dark summarwiki' }
     });
   }
 });
