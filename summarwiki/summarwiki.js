@@ -2,11 +2,15 @@ var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
 var wiki_callback = "&prop=text&redirects&section=0&format=json&callback=?";
 var image_prefix = "http://en.wikipedia.org/w/api.php?action=query&titles=";
 var file_prefix = "http://en.wikipedia.org/wiki/";
+var new_api = "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=";
+var post_chars = "&redirects&titles=";
+var post_title = "&format=json&callback=?";
 
-function setImage(term, summary, api){
+
+function setImage(term, summary, api) {
   var query = image_prefix + term + "&prop=images&format=json&callback=?";
   $.getJSON(query, function(data) {
-    for (text in data.query.pages){
+    for (text in data.query.pages) {
       try {
         var image_url = data.query.pages[text];
         console.log(image_url.images[0].title);
@@ -17,20 +21,54 @@ function setImage(term, summary, api){
         summary = image_tag + summary;
         api.set('content.text', summary);
       } catch (err) {
-
+        //HMMM
       }
     }
-  });
+  }).error(function(jqXHR, textStatus, errorThrown) {
+        console.log("error " + textStatus);
+        console.log("incoming Text " + jqXHR);
+    });
 }
 
-function setSummary(term, api){
+// New hotness implementation of setSummary
+function setWikiSummary(term, api) {
+  var q2 = new_api + '750' + post_chars + encodeURIComponent(term) + post_title;
+  //console.log(q2);
+  $.getJSON(q2, function(data) {
+      //console.log(data);
+      for (text in data.query.pages) {
+        try {
+          //console.log(data.query.pages);
+          var extract = data.query.pages[text].extract;
+          //console.log(extract);
+          extract = extract.replace(/h[1-6]>/, 'p>');
+          extract.replace(/\n/, ' ');
+          if (extract.length > 750){
+            extract = extract.substring(0, 750) + '...';
+          }
+          if (extract.indexOf('...') < 5) {
+            extract = 'No Data Available';
+          } 
+          api.set('content.text', extract);
+        } catch (err) {
+          console.log('Failed to extract summary of ' + term);
+          // What to do?
+        }
+      }
+    }).error(function(xhr, textStatus, errorThrown) {
+      //console.log(xhr);
+      console.log('Error, status: ' + textStatus + errorThrown);
+    });
+}
+
+function setSummary(term, api) {
   api.set('content.text', 'Searching....');
-  //console.log('Looking up: ' + term);
+  console.log('Looking up: ' + term);
   var query = wiki_prefix + term + wiki_callback; 
   var qText = "";
   // Got this voodoo from http://jsfiddle.net/gautamadude/HMJJg/1/
   $.getJSON(query, function(data) {
-    // console.log('DATA: ' + data);
+     console.log('DATA: ' + data);
     var pText = "";
     try {
       for (text in data.parse.text) {
@@ -61,14 +99,13 @@ function setSummary(term, api){
         }
       }
     } catch (err) {
-      console.err("PROBLEM SUMMARIZING:  " + pText);
       return pText;
     }
     pText = pText.substring(0, pText.length - 2); //Remove extra newline
     pText = pText.replace(/\[\d+\]/g, ""); //Remove reference tags (e.x. [1], [4], etc)
     //console.log('returning: ' + pText);
-    if (pText.length > 700){
-      pText = pText.substring(0, 700) + '...';
+    if (pText.length > 1000){
+      pText = pText.substring(0, 1000) + '...';
     }
     if (pText.length === 0) {
       pText = 'No Data Available';
@@ -82,7 +119,7 @@ function setSummary(term, api){
 }
 
 function checkIsWikiPage(term, link){
-  if (link.indexOf('wikipedia') >= 0 && link.indexOf('#') < 0) {
+  if (link.indexOf('wikipedia.org/wiki') >= 0 && link.indexOf('#') < 0 && link.indexOf('File:') < 0) {
     return true;
   }
   return false;
@@ -95,12 +132,13 @@ $("a").each(function() {
   l.link = this.href;
   l.text = this.innerHTML.replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});;
   if (checkIsWikiPage(l.text, l.link)) {
-    var search_term = l.link.split('/')[l.link.split('/').length - 1].replace(/(\-[a-z])/g, function($1){return $1.toUpperCase();});
+    var search_term = decodeURIComponent(l.link.split('/')[l.link.split('/').length - 1]);
     //Add qtip
     $(this).qtip({
       content: {
+        title: search_term.replace(/\_/g, ' ').toUpperCase(),
         text: function(event, api) {
-          setSummary(search_term, api);
+          setWikiSummary(search_term, api);
         }
       },
       position: {

@@ -22,3 +22,17 @@ to the top of the summary. I've written the code to get the url that the
 image is at but I'm having a little trouble interpretting it as anything
 but plain html right now.
 
+
+V1.0.3
+======
+
+Increased percent of links which are correctly identified in 2 ways: first,
+if a link has URI encoded characters those are decoded before being used
+as search terms to look up summaries. Second, the links now follow redirects
+that happen on the wikipedia side (ie: wikipedia.org/wiki/US\_(Country) ==>
+wikipedia.org/United\_States)
+
+Coming next is getting cross origin domain requests working with jsonp. This
+will allow the tooltips to pop up on non-wikipedia domains that link to 
+wikipedia articles.
+
