@@ -1,8 +1,8 @@
-var wiki_prefix = "http://en.wikipedia.org/w/api.php?action=parse&page=";
+var wiki_prefix = "https://en.wikipedia.org/w/api.php?action=parse&page=";
 var wiki_callback = "&prop=text&redirects&section=0&format=json&callback=?";
-var image_prefix = "http://en.wikipedia.org/w/api.php?action=query&titles=";
-var file_prefix = "http://en.wikipedia.org/wiki/";
-var new_api = "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=";
+var image_prefix = "https://en.wikipedia.org/w/api.php?action=query&titles=";
+var file_prefix = "https://en.wikipedia.org/wiki/";
+var new_api = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=";
 var post_chars = "&redirects&titles=";
 var post_title = "&format=json&callback=?";
 
@@ -34,14 +34,19 @@ function setImage(term, summary, api) {
 function setWikiSummary(term, api) {
   var q2 = new_api + '750' + post_chars + encodeURIComponent(term) + post_title;
   //console.log(q2);
-  $.getJSON(q2, function(data) {
-      //console.log(data);
+  // Hack to get around cross origin request policy
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", q2, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var data = JSON.parse(xhr.responseText.substring(5, xhr.responseText.length -1)); 
+       //handle the xhr response here
       for (text in data.query.pages) {
         try {
           //console.log(data.query.pages);
           var extract = data.query.pages[text].extract;
           //console.log(extract);
-          extract = extract.replace(/h[1-6]>/, 'p>');
+          extract = extract.replace(/h[1-6]>/g, 'p>');
           extract.replace(/\n/, ' ');
           if (extract.length > 750){
             extract = extract.substring(0, 750) + '...';
@@ -55,10 +60,9 @@ function setWikiSummary(term, api) {
           // What to do?
         }
       }
-    }).error(function(xhr, textStatus, errorThrown) {
-      //console.log(xhr);
-      console.log('Error, status: ' + textStatus + errorThrown);
-    });
+    }
+  }
+  xhr.send();
 }
 
 function setSummary(term, api) {
@@ -119,7 +123,7 @@ function setSummary(term, api) {
 }
 
 function checkIsWikiPage(term, link){
-  if (link.indexOf('wikipedia.org/wiki') >= 0 && link.indexOf('#') < 0 && link.indexOf('File:') < 0) {
+  if (link.indexOf('en.wikipedia.org/wiki') >= 0 && link.indexOf('File:') < 0) {
     return true;
   }
   return false;
@@ -132,7 +136,7 @@ $("a").each(function() {
   l.link = this.href;
   l.text = this.innerHTML.replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});;
   if (checkIsWikiPage(l.text, l.link)) {
-    var search_term = decodeURIComponent(l.link.split('/')[l.link.split('/').length - 1]);
+    var search_term = decodeURIComponent(l.link.split('/')[l.link.split('/').length - 1]).split('#')[0];
     //Add qtip
     $(this).qtip({
       content: {
