@@ -36,3 +36,11 @@ Coming next is getting cross origin domain requests working with jsonp. This
 will allow the tooltips to pop up on non-wikipedia domains that link to 
 wikipedia articles.
 
+v1.0.6
+======
+
+Now supports summaries of wiki links on any page and also supports https.
+
+Next on the roadmap is hopefully embedded images!
+
+
