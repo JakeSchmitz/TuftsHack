@@ -146,7 +146,9 @@ $("a").each(function() {
         }
       },
       position: {
-        viewport: $(window)
+        viewport: $(window),
+        target: 'mouse',
+        adjust: {x: 0, y: 5}
       },
       style: {classes: 'qtip-dark qtip-jtools summarwiki' }
     });
